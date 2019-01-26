@@ -1,0 +1,3 @@
+[run]
+source = kralingsekost
+omit = kralingsekost/test*
