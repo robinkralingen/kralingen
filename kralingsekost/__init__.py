@@ -6,6 +6,12 @@ from pyramid.csrf import SessionCSRFStoragePolicy
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
+
+    from pyramid.settings import asbool
+    if asbool(settings.get('env.use_env_variables', False)):
+        from os import getenv
+        settings['sqlalchemy.url'] = getenv(settings['sqlalchemy.url'])
+
     with Configurator(settings=settings) as config:
         config.include('.models')
         config.include('pyramid_mako')
