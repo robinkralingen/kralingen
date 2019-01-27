@@ -40,7 +40,9 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    engine = engine_from_config(settings, prefix='sqlalchemy.')
+    from sqlalchemy import create_engine
+    engine = create_engine(os.environ['DATABASE_URL'])
+
 
     connection = engine.connect()
     context.configure(
