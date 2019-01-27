@@ -3,14 +3,14 @@
 <div id="main">
     <div class="inner">
         <header>
-            <h1>Mijn Recepten.</h1>
-            <p>Je eigen recepten.</p>
+            <h1>Welkom terug ${request.user.name}</h1>
+            <h2>Mijn Recepten</h2>
         </header>
         <section class="tiles">
             % for recipe in recipes:
                 <article class="style1">
                     <span class="image">
-                        <img src="https://static.independent.co.uk/s3fs-public/thumbnails/image/2017/09/12/11/naturo-monkey-selfie.jpg?w968h681" alt="" />
+                        <img src="${recipe.image_url}" alt="" />
                     </span>
                     <a href="${request.route_url('dashboard.recipe.edit', recipe_id=recipe.id)}">
                         <h2>${recipe.name}</h2>

@@ -1,12 +1,12 @@
 def includeme(config):
     config.add_static_view('static', 'static', cache_max_age=3600)
 
-    config.add_route('home', '/')
+    # config.add_route('home', '/')
 
     config.add_route('register', '/register')
     config.add_route('create.register', '/register')
 
-    config.add_route('recipe.list', '/recipes')
+    config.add_route('recipe.list', '/')
     config.add_route('recipe.detail', '/recipes/{recipe_id}')
 
     config.add_route('dashboard.auth.login', '/dashboard/login')

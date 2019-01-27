@@ -3,7 +3,10 @@
 <div id="main">
     <div class="inner">
         <h1>${recipe.name}</h1>
-        <span class="image main"><img src="https://static.independent.co.uk/s3fs-public/thumbnails/image/2017/09/12/11/naturo-monkey-selfie.jpg?w968h681" alt="" /></span>
+        <h2>Categorie: ${recipe.category.name}</h2>
+        <span class="image main"><img src="${recipe.image_url}" alt="" /></span>
         <p>${recipe.description}</p>
+
+        <p>Recept geplaatst door: ${recipe.author.name}</p>
     </div>
 </div>

@@ -1,5 +1,6 @@
 from pyramid.config import Configurator
 from pyramid.session import SignedCookieSessionFactory
+from pyramid.csrf import SessionCSRFStoragePolicy
 
 
 def main(global_config, **settings):
@@ -10,6 +11,8 @@ def main(global_config, **settings):
         config.include('pyramid_mako')
         config.include('.routes')
         config.include('.security')
+        config.set_csrf_storage_policy(SessionCSRFStoragePolicy)
+
         config.set_session_factory(
             SignedCookieSessionFactory(settings.get('secret'))
         )

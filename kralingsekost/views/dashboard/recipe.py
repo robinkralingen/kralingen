@@ -4,7 +4,35 @@ import shutil
 import pyramid.httpexceptions as exc
 from pyramid.view import view_config
 
+from wtforms import (
+    Form, StringField, validators, SelectField, FieldList, FormField)
 from kralingsekost import models
+
+
+class IngredientForm(Form):
+    name = StringField('name', [
+        validators.InputRequired()
+    ])
+    amount = StringField('amount', [
+        validators.InputRequired()
+    ])
+
+class RecipeForm(Form):
+    name = StringField('name', [
+        validators.InputRequired()
+    ])
+    description = StringField('description', [
+        validators.InputRequired()
+    ])
+    image_url = StringField('image_url', [
+        validators.InputRequired()
+    ])
+    category_id = SelectField('Category', [
+        validators.InputRequired()
+    ], coerce=int)
+
+    ingredients = FieldList(FormField(IngredientForm))
+
 
 
 @view_config(route_name='dashboard.recipe.list', renderer='dashboard/list.mako')
@@ -25,66 +53,53 @@ def list_(request):
 @view_config(route_name='dashboard.recipe.edit', renderer='dashboard/edit.mako')
 def edit(request):
     recipe_id = request.matchdict['recipe_id']
+    recipe = request.dbsession.query(models.Recipe).get(recipe_id)
 
-    if request.method == 'POST':
-        recipe = request.dbsession.query(models.Recipe).get(recipe_id)
-        recipe.name = request.POST.get('name')
-        recipe.description = request.POST.get('description')
+    if not recipe:
+        raise exc.HTTPNotFound('Recipe not found')
+
+    if recipe.author_id != request.user.id:
+        raise exc.HTTPUnauthorized('You can only edit your own recipes')
+
+    form = RecipeForm(request.POST, recipe)
+    categories = request.dbsession.query(models.Category).all()
+    form.category_id.choices = [(c.id, c.name) for c in categories]
+    
+    if request.method == 'POST' and form.validate():
+        form.populate_obj(recipe)
         request.dbsession.add(recipe)
         return exc.HTTPFound(
             request.route_path('dashboard.recipe.list')
         )
 
-
-    recipe = request.dbsession.query(models.Recipe).get(recipe_id)
-
-    if recipe.author_id != request.user.id:
-        raise exc.HTTPUnauthorized('You can only edit your own recipes')
-
-    if not recipe:
-        raise exc.HTTPNotFound('Recipe not found')
-
-    return {'recipe': recipe}
+    return {
+        'form': form,
+        'recipe': recipe
+    }
 
 
 @view_config(route_name='dashboard.recipe.create', renderer='dashboard/create.mako')
 def create(request):
-    if request.method == 'GET':
-        return {}
-    # Create recipe from request.POST
+    form = RecipeForm(request.POST)
+    categories = request.dbsession.query(models.Category).all()
+    form.category_id.choices = [(c.id, c.name) for c in categories]
 
-    recipe = models.Recipe()
-    recipe.name = request.POST.get('name')
-    recipe.description = request.POST.get('description')
-    recipe.author = request.user
+    if request.method == 'POST' and form.validate():
+        recipe = models.Recipe()
+        recipe.name = form.name.data
+        recipe.description = form.description.data
+        recipe.image_url = form.image_url.data
+        recipe.category_id = form.category_id.data
+        recipe.author = request.user
+        request.dbsession.add(recipe)
 
-    request.dbsession.add(recipe)
+        return exc.HTTPFound(
+            request.route_path('dashboard.recipe.list')
+        )
 
-    return exc.HTTPFound(
-        request.route_path('dashboard.recipe.list')
-    )
-
-    # def save_file(file_object):
-    #     input_file = file_object.file
-    #     target_filename = '%s.jpg' % uuid.uuid4()
-
-    #     file_path = os.path.join(
-    #         request.registry.settings['upload_dir'],
-    #         target_filename
-    #     )
-
-    #     temp_file_path = file_path + '~'
-
-    #     input_file.seek(0)
-    #     with open(temp_file_path, 'wb') as output_file:
-    #         shutil.copyfileobj(input_file, output_file)
-
-    #     os.rename(temp_file_path, file_path)
-    #     return target_filename
-
-    # # If not all required information is present -> Return errors
-
-    # # If recipe is successfully created -> redirect to overview
+    return {
+        'form': form
+    }
 
 
 @view_config(route_name='dashboard.recipe.delete')

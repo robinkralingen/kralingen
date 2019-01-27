@@ -1,12 +1,25 @@
 import logging
+
 import pyramid.httpexceptions as exc
 from pyramid.view import view_config
 from pyramid.security import remember, forget
 
+from wtforms import Form, StringField, validators, PasswordField
+
 from kralingsekost import models
-from kralingsekost.security import hash_password
+from kralingsekost.security import hash_password, check_password
 
 log = logging.getLogger(__name__)
+
+
+class LoginForm(Form):
+    email = StringField('email', [
+        validators.email(),
+        validators.InputRequired()
+    ])
+    password = PasswordField('password', [
+        validators.InputRequired()
+    ])
 
 
 @view_config(
@@ -15,27 +28,28 @@ log = logging.getLogger(__name__)
     renderer='dashboard/auth.mako'
 )
 def login(request):
-    if request.method == 'GET':
-        return {}
+    form = LoginForm(request.POST)
 
-    try:
-        email = request.POST['email']
-        password = request.POST['password']
-    except KeyError:
-        raise exc.HTTPBadRequest()
+    if request.method == 'POST' and form.validate():
+        user = request.dbsession.query(
+            models.User).filter_by(email=form.email.data).one_or_none()
+        if not user:
+            form.errors = {'email': 'no user exists'}
+            return {'form': form}
 
-    user = request.dbsession.query(models.User).filter_by(email=email).one()
+        if not check_password(form.password.data, user.password):
+            form.errors = {'password': 'password is incorect'}
+            return {'form': form}
 
-    # TODO: FIX
-    # if hash_password(password) != user.password:
-    #     raise exc.HTTPUnauthorized('Wrong password')
+        headers = remember(request, user.id)
 
-    headers = remember(request, user.id)
+        return exc.HTTPFound(
+            request.route_path('dashboard.recipe.list'),
+            headers=headers
+        )
+        
+    return {'form': form}
 
-    return exc.HTTPFound(
-        request.route_path('dashboard.recipe.list'),
-        headers=headers
-    )
 
 
 @view_config(route_name='dashboard.auth.logout')

@@ -3,7 +3,8 @@ from sqlalchemy import (
     Integer,
     Text,
     String,
-    ForeignKey
+    ForeignKey,
+    Boolean
 )
 from sqlalchemy.orm import relationship
 
@@ -19,7 +20,9 @@ class Recipe(Base):
     description = Column(Text)
     slug = Column(String, unique=True)
 
-    # filename = Column(String)
+    hidden = Column(Boolean, default=False)
+
+    image_url = Column(String)
 
     author_id = Column(Integer, ForeignKey('user.id'))
     author = relationship('User', back_populates='recipes')

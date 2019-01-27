@@ -28,7 +28,7 @@
 
               <!-- Logo -->
                 <a href="${request.route_url('recipe.list')}" class="logo">
-                  <span class="symbol"><img src="images/logo.svg" alt="" /></span><span class="title">Kralingsekost</span>
+                  <span class="title">Kralingsekost</span>
                 </a>
 
               <!-- Nav -->
@@ -60,7 +60,6 @@
         <footer id="footer">
             <div class="inner">
               <ul class="copyright">
-                <li>&copy; Untitled. All rights reserved</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
               </ul>
             </div>
           </footer>

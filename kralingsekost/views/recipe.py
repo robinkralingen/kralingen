@@ -1,6 +1,6 @@
 import pyramid.httpexceptions as exc
 from pyramid.view import view_config
-
+from sqlalchemy import or_
 from .. import models
 
 
@@ -10,13 +10,26 @@ from .. import models
 )
 def list_(request):
     search_query = request.params.get('q', None)
+    category = request.params.get('category', None)
 
     recipes = request.dbsession.query(models.Recipe)
 
     if search_query:
-        recipes.filter(models.Recipe.name.ilike(search_query))
+        recipes = recipes.filter(or_(
+            models.Recipe.name.ilike('%'+search_query+'%'),
+            models.Recipe.description.ilike('%'+search_query+'%')
+        ))
+    
+    if category:
+        recipes = recipes.filter(models.Recipe.category_id == category)
 
-    return {'recipes': recipes.limit(10)}
+    categories = request.dbsession.query(models.Category).all()
+
+    print(recipes)
+    return {
+        'recipes': recipes.limit(10),
+        'categories': categories
+    }
 
 
 @view_config(
