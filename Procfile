@@ -1,2 +1,2 @@
 web: bash ./run
-migrate: alembic -c production.ini upgrade head
+migrate: python setup.py develop && alembic -c production.ini upgrade head
