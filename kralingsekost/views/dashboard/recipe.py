@@ -35,7 +35,11 @@ class RecipeForm(Form):
 
 
 
-@view_config(route_name='dashboard.recipe.list', renderer='dashboard/list.mako')
+@view_config(
+    route_name='dashboard.recipe.list',
+    renderer='dashboard/list.mako',
+    permission='private'
+)
 def list_(request):
     search_query = request.params.get('q', None)
 
@@ -50,7 +54,11 @@ def list_(request):
     return {'recipes': recipes.limit(10)}
 
 
-@view_config(route_name='dashboard.recipe.edit', renderer='dashboard/edit.mako')
+@view_config(
+    route_name='dashboard.recipe.edit', 
+    renderer='dashboard/edit.mako',
+    permission='private'
+)
 def edit(request):
     recipe_id = request.matchdict['recipe_id']
     recipe = request.dbsession.query(models.Recipe).get(recipe_id)
@@ -78,7 +86,11 @@ def edit(request):
     }
 
 
-@view_config(route_name='dashboard.recipe.create', renderer='dashboard/create.mako')
+@view_config(
+    route_name='dashboard.recipe.create',
+    renderer='dashboard/create.mako',
+    permission='private'
+)
 def create(request):
     form = RecipeForm(request.POST)
     categories = request.dbsession.query(models.Category).all()
@@ -102,7 +114,10 @@ def create(request):
     }
 
 
-@view_config(route_name='dashboard.recipe.delete')
+@view_config(
+    route_name='dashboard.recipe.delete',
+    permission='private'
+)
 def delete(request):
     recipe_id = request.matchdict['recipe_id']
     recipe = request.dbsession.query(models.Recipe).get(recipe_id)

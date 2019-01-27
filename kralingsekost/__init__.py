@@ -19,6 +19,8 @@ def main(global_config, **settings):
         config.include('.security')
         config.set_csrf_storage_policy(SessionCSRFStoragePolicy)
 
+        config.set_default_permission('public')
+
         config.set_session_factory(
             SignedCookieSessionFactory(settings.get('secret'))
         )

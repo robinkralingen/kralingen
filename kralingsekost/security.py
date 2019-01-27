@@ -2,7 +2,8 @@ import bcrypt
 
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
-from pyramid.security import ALL_PERMISSIONS, Allow, Authenticated
+from pyramid.security import (ALL_PERMISSIONS,
+    Allow, Authenticated, Everyone, DENY_ALL)
 
 from kralingsekost.models import User
 
@@ -33,8 +34,30 @@ class LabelAuthenticationPolicy(AuthTktAuthenticationPolicy):
 
 class Root:
     __acl__ = (
-        (Allow, Authenticated, ALL_PERMISSIONS),
+        (Allow, 'administrator', ALL_PERMISSIONS),
+        (Allow, Everyone, 'public'),
+        (Allow, Authenticated, 'private'),
+        (DENY_ALL)
     )
+
+
+def auth_profilefinder(userid, request):
+    rights = []
+    try:
+        user = request.dbsession.query(User).get(userid)
+        if user:
+            rights.append('private')
+    except:
+        request.response.status = 404
+        return {"error": "User doesn't exist."}
+    try:
+        if user.roles:
+            for role in user.roles:
+                rights.append(role.name)
+        # log.info(rights)
+    except:
+        pass
+    return rights
 
 
 def includeme(config):
@@ -42,6 +65,7 @@ def includeme(config):
     authn_policy = LabelAuthenticationPolicy(
         settings['secret'],
         hashalg='sha512',
+        callback=auth_profilefinder
     )
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(ACLAuthorizationPolicy())

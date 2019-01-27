@@ -9,6 +9,9 @@ def includeme(config):
     config.add_route('recipe.list', '/')
     config.add_route('recipe.detail', '/recipes/{recipe_id}')
 
+    config.add_route('admin.overview', '/admin')
+    config.add_route('admin.recipe.toggle', '/admin/recipe/{recipe_id}/toggle')
+
     config.add_route('dashboard.auth.login', '/dashboard/login')
     config.add_route('dashboard.auth.logout', '/dashboard/logout')
 

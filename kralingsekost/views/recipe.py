@@ -12,7 +12,7 @@ def list_(request):
     search_query = request.params.get('q', None)
     category = request.params.get('category', None)
 
-    recipes = request.dbsession.query(models.Recipe)
+    recipes = request.dbsession.query(models.Recipe).filter_by(hidden=False)
 
     if search_query:
         recipes = recipes.filter(or_(
@@ -25,7 +25,6 @@ def list_(request):
 
     categories = request.dbsession.query(models.Category).all()
 
-    print(recipes)
     return {
         'recipes': recipes.limit(10),
         'categories': categories
@@ -41,7 +40,7 @@ def detail(request):
 
     recipe = request.dbsession.query(models.Recipe).get(recipe_id)
 
-    if not recipe:
+    if not recipe or recipe.hidden:
         raise exc.HTTPNotFound('Recipe not found')
 
     return {'recipe': recipe}
